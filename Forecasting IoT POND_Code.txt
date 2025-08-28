@@ -1,0 +1,546 @@
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(corrplot) 
+IoT_Fish_farm <- read_csv("IoT_Fish farm.csv")
+View(IoT_Fish_farm)
+
+head(IoT_Fish_farm)
+
+# Read your CSV
+IoT_Fish_farm <- read_csv("IoT_Fish farm.csv")
+
+# Check the data
+head(IoT_Fish_farm)
+str(IoT_Fish_farm)
+
+
+# Summary statistics for numeric columns
+summary_stats <- IoT_Fish_farm %>%
+  select(Temperature, pH, Turbidity) %>%
+  summary()
+
+print(summary_stats)
+
+library(apaTables)
+library(dplyr)
+
+# Select numeric columns
+numeric_data <- IoT_Fish_farm %>% select(Temperature, pH, Turbidity)
+
+# Create APA-style table
+apa.cor.table(numeric_data, filename = "APA_Descriptives.doc", table.number = 1)
+
+
+# Compute correlation matrix for numeric columns
+cor_matrix <- cor(IoT_Fish_farm %>% select(Temperature, pH, Turbidity))
+
+# Plot correlation heatmap
+corrplot(cor_matrix, method = "color", addCoef.col = "black", number.cex = 0.8,
+         tl.cex = 0.8, tl.col = "black", order = "hclust")
+
+
+
+
+# Boxplot of Temperature by Species
+ggplot(IoT_Fish_farm, aes(x = Abundance, y = Temperature)) +
+  geom_boxplot(fill = "firebrick3") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggtitle("")
+
+# Boxplot of pH by Species
+ggplot(IoT_Fish_farm, aes(x = Abundance, y = pH)) +
+  geom_boxplot(fill = "springgreen") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggtitle("")
+
+# Boxplot of Turbidity by Species
+ggplot(IoT_Fish_farm, aes(x = Abundance, y = Turbidity)) +
+  geom_boxplot(fill = "lightgoldenrod") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggtitle("")
+
+
+
+
+
+
+#Model Performance 
+
+library(dplyr)
+library(knitr)
+library(kableExtra)
+
+# Species list
+species <- c("tilapia", "rui", "pangas", "silverCup", "katla", "sing", "shrimp", "karpio", "prawn", "koi", "magur")
+
+# Simulated model performance (replace with your real results)
+set.seed(123)
+model_perf <- expand.grid(Species = species,
+                          Model = c("RF", "XGBoost", "ANN")) %>%
+  mutate(
+    RMSE = round(runif(nrow(.), 50, 200), 1),
+    MAE  = round(runif(nrow(.), 30, 150), 1),
+    R2   = round(runif(nrow(.), 0.6, 0.99), 2)
+  )
+
+# View first rows
+head(model_perf)
+
+
+
+# Find best model per species
+best_model <- model_perf %>%
+  group_by(Species) %>%
+  mutate(Best = ifelse(RMSE == min(RMSE), "✔", "")) %>%
+  ungroup()
+
+# View
+best_model
+
+
+
+best_model %>%
+  arrange(Species, RMSE) %>%
+  kable(caption = "Model Performance Metrics per Fish Species",
+        col.names = c("Species", "Model", "RMSE", "MAE", "R²", "Best Model")) %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover", "condensed"))
+
+
+
+best_model %>%
+  arrange(Species, RMSE) %>%
+  kable() %>%
+  kable_styling(full_width = F) %>%
+  row_spec(which(best_model$Best == "✔"), bold = T, color = "white", background = "green")
+
+
+
+
+
+
+
+library(dplyr)
+
+
+# Example species list
+species <- c("tilapia", "rui", "pangas", "silverCup", "katla", "sing", "shrimp", "karpio", "prawn", "koi", "magur")
+
+# Simulate model performance (replace with your real results)
+set.seed(123)
+model_perf <- expand.grid(Species = species,
+                          Model = c("RF", "XGBoost", "ANN")) %>%
+  mutate(
+    RMSE = round(runif(nrow(.), 50, 200), 1),
+    MAE  = round(runif(nrow(.), 30, 150), 1),
+    R2   = round(runif(nrow(.), 0.6, 0.99), 2)
+  )
+
+
+
+ggplot(model_perf, aes(x = Model, y = RMSE, fill = Model)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~Species, scales = "free_y") +
+  theme_minimal() +
+  ggtitle("RMSE per Model for Each Fish Species") +
+  ylab("RMSE") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+ggplot(model_perf, aes(x = Model, y = MAE, fill = Model)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~Species, scales = "free_y") +
+  theme_minimal() +
+  ggtitle("MAE per Model for Each Fish Species") +
+  ylab("MAE") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+ggplot(model_perf, aes(x = Model, y = R2, fill = Model)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~Species, scales = "free_y") +
+  theme_minimal() +
+  ggtitle("R² per Model for Each Fish Species") +
+  ylab("R²") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+
+
+
+species <- c("Tilapia", "Rui", "Pangas", "SilverCarp", "Katla",
+             "Sing", "Shrimp", "Carpio", "Prawn", "Koi", "Magur")
+
+set.seed(123)
+model_perf <- expand.grid(Species = species,
+                          Model = c("RF", "XGBoost", "ANN")) %>%
+  mutate(
+    RMSE = round(runif(nrow(.), 50, 200), 1),
+    MAE  = round(runif(nrow(.), 30, 150), 1),
+    R2   = round(runif(nrow(.), 0.6, 0.99), 2)
+  )
+
+# Convert to long format for streamgraph
+perf_long <- model_perf %>%
+  tidyr::pivot_longer(cols = c(RMSE, MAE, R2), names_to = "Metric", values_to = "Value")
+
+
+
+
+rmse_data <- perf_long %>% filter(Metric == "RMSE")
+
+ggplot(rmse_data, aes(x = Species, y = Value, fill = Model)) +
+  geom_stream(type = "ridge") +  # stream shape
+  theme_classic(base_size = 14) +
+  scale_fill_brewer(palette = "Set2") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(face = "bold", size = 16)) +
+  ggtitle("") +
+  ylab("RMSE") +
+  xlab("Species")
+
+
+
+
+ggplot(r2_data, aes(x = Species, y = Value, fill = Model)) +
+  geom_stream(type = "ridge") +
+  theme_classic(base_size = 14) +
+  scale_fill_manual(values = c("RF" = "plum", 
+                               "XGBoost" = "firebrick", 
+                               "ANN" = "skyblue")) +  # Custom colors
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"),
+        plot.title = element_text(face = "bold", size = 16)) +
+  ggtitle("") +
+  ylab("R²") +
+  xlab("Species")
+
+
+
+  
+  
+
+#R2 
+
+r2_data <- perf_long %>% filter(Metric == "R2")
+
+ggplot(r2_data, aes(x = Species, y = Value, fill = Model)) +
+  geom_stream(type = "ridge") +
+  theme_minimal(base_size = 14) +
+  scale_fill_brewer(palette = "Set2") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"),
+        plot.title = element_text(face = "bold", size = 16)) +
+  ggtitle("Stream Plot of R² Across Species per Model") +
+  ylab("R²") +
+  xlab("Species")
+
+
+
+
+
+
+
+
+
+
+
+
+#Summary table for RMSE, MAE, R2
+
+
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(kableExtra)
+
+
+species <- c("Tilapia", "Rui", "Pangas", "SilverCarp", "Katla",
+             "Sing", "Shrimp", "Carpio", "Prawn", "Koi", "Magur")
+
+set.seed(123)
+model_perf <- expand.grid(Species = species,
+                          Model = c("RF", "XGBoost", "ANN")) %>%
+  mutate(
+    RMSE = round(runif(nrow(.), 50, 200), 1),
+    MAE  = round(runif(nrow(.), 30, 150), 1),
+    R2   = round(runif(nrow(.), 0.6, 0.99), 2)
+  )
+
+
+# Arrange data nicely
+apa_table <- model_perf %>%
+  arrange(Species, Model) %>%
+  select(Species, Model, RMSE, MAE, R2)
+
+# Add "Best Model" column based on lowest RMSE
+apa_table <- apa_table %>%
+  group_by(Species) %>%
+  mutate(Best_Model = ifelse(RMSE == min(RMSE), "✔", "")) %>%
+  ungroup()
+
+# Create APA-style table
+kable(apa_table, format = "html", 
+      col.names = c("Species", "Model", "RMSE", "MAE", "R²", "Best Model"),
+      caption = "Table 1: Model Performance Metrics per Fish Species (APA Style)") %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover", "condensed"))
+
+
+
+
+
+library(officer)
+library(flextable)
+
+ft <- flextable(apa_table)
+ft <- set_caption(ft, caption = "Table 1: Model Performance Metrics per Fish Species (APA Style)")
+save_as_docx(ft, path = "Model_Performance_APA.docx")
+
+
+
+
+
+#Best Performance 
+
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Example dataset (replace with your model_perf)
+# model_perf <- data.frame(
+#   Species = rep(c("Species A", "Species B"), each = 3),
+#   Model   = rep(c("RF", "SVM", "ANN"), 2),
+#   RMSE    = c(1.2, 0.9, 1.0, 2.1, 1.8, 2.0),
+#   MAE     = c(0.8, 0.7, 0.6, 1.5, 1.2, 1.4),
+#   R2      = c(0.82, 0.90, 0.88, 0.70, 0.76, 0.72)
+# )
+
+# Reshape to long format for plotting
+plot_data <- model_perf %>%
+  pivot_longer(cols = c(RMSE, MAE, R2), names_to = "Metric", values_to = "Value")
+
+# Identify best per species & metric
+best_data <- plot_data %>%
+  group_by(Species, Metric) %>%
+  mutate(Best = ifelse(
+    (Metric %in% c("RMSE","MAE") & Value == min(Value)) |
+      (Metric == "R2" & Value == max(Value)), TRUE, FALSE))
+
+# Plot
+ggplot(best_data, aes(x = Model, y = Value, fill = Best)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_grid(Metric ~ Species, scales = "free_y") +
+  scale_fill_manual(values = c("FALSE" = "grey45", "TRUE" = "steelblue")) +
+  labs(title = "",
+       subtitle = "",
+       y = "Score", x = "Model") +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+
+
+
+
+
+
+
+library(ggplot2)
+library(dplyr)
+
+# Example: Feature importance results for each model (per species)
+feat_imp <- data.frame(
+  Species = rep(c("Species A", "Species B"), each = 9),
+  Model = rep(c("RF", "XGBoost", "ANN"), times = 6),
+  Feature = rep(c("pH", "Temp", "Turbidity"), times = 6),
+  Importance = c(
+    # Species A
+    0.30, 0.50, 0.20,   # RF
+    0.35, 0.45, 0.20,   # XGBoost
+    0.40, 0.40, 0.20,   # ANN
+    # Species B
+    0.25, 0.55, 0.20,   # RF
+    0.20, 0.50, 0.30,   # XGBoost
+    0.30, 0.45, 0.25    # ANN
+  )
+) 
+
+# Step 1: Aggregate (mean importance across models per species-feature)
+feat_imp_mean <- feat_imp %>%
+  group_by(Species, Feature) %>%
+  summarise(MeanImportance = mean(Importance), .groups = "drop")
+
+# Step 2: Plot barplot of mean feature importance per species
+ggplot(feat_imp_mean, aes(x = reorder(Feature, MeanImportance), 
+                          y = MeanImportance, fill = Feature)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Species, ncol = 2) +
+  coord_flip() +
+  labs(title = "",
+       x = "Feature", y = "Mean Importance Score") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+
+
+
+
+
+# Load libraries
+library(readr)
+library(lightgbm)
+library(data.table)  # for data manipulation
+
+# Read CSV file
+IoT_Fish_farm <- read_csv("IoT_Fish farm.csv")
+head(IoT_Fish_farm)
+
+# Convert data to matrix format for LightGBM
+# Assume the last column is the target variable
+target <- IoT_Fish_farm[[ncol(IoT_Fish_farm)]]
+features <- as.matrix(IoT_Fish_farm[, -ncol(IoT_Fish_farm)])
+
+# Create LightGBM dataset
+dtrain <- lgb.Dataset(data = features, label = target)
+
+# Set parameters (example for regression)
+params <- list(
+  objective = "regression",
+  metric = "rmse",
+  learning_rate = 0.1,
+  num_leaves = 31
+)
+
+# Train LightGBM model
+model <- lgb.train(
+  params = params,
+  data = dtrain,
+  nrounds = 100
+)
+
+# Predict (example on training data)
+preds <- predict(model, features)
+head(preds)
+
+
+
+
+
+
+library(knitr)
+
+# Example table of optimal ranges
+optimal_ranges <- data.frame(
+  Species = c("Tilapia", "Rui", "Pangas", "Silver Carp", "Katla", "Shrimp"),
+  pH = c("6.5-9.0", "6.5-8.5", "6.5-8.5", "6.5-8.5", "6.5-7.5", "7.0-8.5"),
+  Temperature_C = c("25-30", "24-28", "25-30", "22-28", "20-28", "28-32"),
+  Turbidity_NTU = c("10-50", "10-40", "10-45", "10-35", "10-30", "5-20")
+)
+
+# Print table nicely
+kable(optimal_ranges, caption = "Optimal Water Quality Ranges per Species")
+
+
+
+
+library(readr)
+
+# 1️⃣ Load CSV
+IoT_Fish_farm <- read_csv("IoT_Fish farm.csv")
+View(IoT_Fish_farm)
+
+# 2️⃣ Select only numeric water quality columns and species column
+# Replace column names if different in your CSV
+species_data <- IoT_Fish_farm[, c("Abundance", "pH", "Temperature", "Turbidity")]
+
+# 3️⃣ Set rownames as species
+row.names(species_data) <- species_data$Abundance
+species_data$Abundance <- NULL  # Remove species column for clustering
+
+# 4️⃣ Compute distance and hierarchical clustering
+dist_matrix <- dist(species_data)  # Euclidean distance
+hc <- hclust(dist_matrix, method = "ward.D2")
+
+# 5️⃣ Plot dendrogram
+plot(hc, 
+     main = "Dendrogram of Species by Water Quality Preferences", 
+     ylab = "Height", sub = "", cex = 0.8)
+
+
+
+
+
+
+library(ggplot2)
+
+# PCA for 2D visualization
+pca <- prcomp(species_data, scale. = TRUE)
+pca_df <- data.frame(Species = rownames(species_data), PCA1 = pca$x[,1], PCA2 = pca$x[,2])
+
+ggplot(pca_df, aes(x = PCA1, y = PCA2, label = Species)) +
+  geom_point(size = 3) +
+  geom_text(vjust = -0.5) +
+  ggtitle("Species Clustering by Water Quality Preferences") +
+  theme_minimal()
+
+
+
+
+
+
+library(knitr)
+
+# Sample dataset
+fish_data <- data.frame(
+  pH = c(6, 7.5, 6.1, 7.1, 7.5, 7.7, 7.9, 5.5, 6.2, 8.2),
+  Temperature = c(27, 29, 31, 23, 32, 22, 29, 18, 19, 27),
+  Depth_Feet = c(6.5, 3.5, 5, 4.3, 7, 5.1, 4.9, 4.5, 5.2, 4),
+  Turbidity_NTU = c(7,6,4.9,5.5,7.3,6,5.5,5,6.1,8.5),
+  Fish = c("Katla","Prawn","Rui","Koi","Katla","Rui","Rui","Koi","Koi","Prawn")
+)
+
+# Display table in clean style
+kable(fish_data, caption = "Table 3. Sample Water Quality Dataset for Fish Survival", 
+      align = "c", booktabs = TRUE)
+
+
+
+
+library(knitr)
+library(kableExtra)
+
+kable(fish_data, caption = "Table 3. Sample Water Quality Dataset for Fish Survival", align = "c") %>%
+  kable_styling(full_width = F, position = "center")
+
+
+
+
+
+
+
+# Data
+species <- c("Tilapia", "Rui", "Pangas", "Silver carp", "Katla",
+             "Sing", "Shrimp", "Carpio", "Prawn", "Koi", "Magur")
+
+count <- c(8830, 6336, 5314, 3906, 3786, 3776, 3204, 2112, 1348, 964, 704)
+
+data <- data.frame(Species = species, Count = count)
+
+# Order species by count (high to low)
+data$Species <- factor(data$Species, levels = data$Species[order(data$Count, decreasing = TRUE)])
+
+# Outstanding fire-colored bar plot
+library(ggplot2)
+
+ggplot(data, aes(x = Species, y = Count, fill = Count)) +
+  geom_bar(stat = "identity", width = 0.7, show.legend = FALSE) +
+  geom_text(aes(label = Count), vjust = -0.5, size = 4, color = "black") +
+  scale_fill_gradient(low = "yellow", high = "red") +  # fire color gradient
+  labs(title = "",
+       x = "Species",
+       y = "Count") +
+  theme_minimal(base_size = 14) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5, face = "bold"))
